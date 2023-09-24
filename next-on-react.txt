@@ -1,0 +1,7 @@
+* routing
+* state mangment
+* fetching data with react query
+* authentication
+* error handling
+* preformance optimization
+* rest api
