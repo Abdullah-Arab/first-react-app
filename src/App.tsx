@@ -1,36 +1,42 @@
-import { useState } from "react";
-import Alert from "./components/Alert";
-import Button from "./components/Button/Button";
-import ListGroup from "./components/ListGroup/";
-import { BsFillCalendarFill } from "react-icons/bs";
-import Like from "./components/Like/Like";
+import axios, { AxiosError } from "axios";
+import { useEffect, useState } from "react";
+
+interface User {
+  id: number;
+  name: string;
+}
 
 function App() {
-  const [alertVisible, setAlertVisibility] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+     try{
+      const res = await axios.get<User[]>(
+        "https://jsonplaceholder.typicode.com/xusers"
+      );
+      setUsers(res.data);
+     }
+     catch (e) {
+      setError((e as AxiosError).message);
+    }
+    }
+    fetchUsers();
+
+    // .then((res) => setUsers(res.data))
+    // .catch(err=> setError(err.message));
+  }, []);
 
   return (
-    <div>
-      <BsFillCalendarFill color="red" size={40}></BsFillCalendarFill>
-      {alertVisible && (
-        <Alert onClose={() => setAlertVisibility(false)}>
-          Halo <span>Wie geth's</span>
-        </Alert>
-      )}
-      <Button onClick={() => setAlertVisibility(true)} color="primary">
-        My Button
-      </Button>
-      <ListGroup
-        items={["Tripoli", "Bengazhi"]}
-        heading={""}
-        onSelectItem={function (item: string): void {
-          throw new Error("Function not implemented.");
-        }}
-      ></ListGroup>
-      <Like
-      onClick={()=> console.log('liked')}
-       
-      ></Like>
-    </div>
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </>
   );
 }
 
