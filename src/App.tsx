@@ -1,40 +1,18 @@
 import { CanceledError } from "./services/api-client";
 import { useEffect, useState } from "react";
 import userService, { User } from "./services/user-service";
-
-
+import useUsers from "./hooks/useUsers";
 
 function App() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading, setLoading] = useState(false);
-
-  useEffect(() => {
-
-    setLoading(true);
-    
-      const {request, cancel} =  userService.getAll<User>();
-      request.then((res) => {
-        setUsers(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (err instanceof CanceledError) return;
-        setError(err.message);
-        setLoading(false);
-      });
-
-    return () => cancel();
-  }, []);
+  const {users, error, isLoading, setUsers, setError } = useUsers();
 
   const deleteUser = (user: User) => {
     const originalUser = [...users];
     setUsers(users.filter((u) => u.id !== user.id));
-    userService.delete(user.id)
-      .catch((err) => {
-        setError(err.message);
-        setUsers(originalUser);
-      });
+    userService.delete(user.id).catch((err) => {
+      setError(err.message);
+      setUsers(originalUser);
+    });
   };
 
   const addUser = () => {
@@ -42,7 +20,8 @@ function App() {
 
     const newUser = { id: 0, name: "Mosh" };
     setUsers([newUser, ...users]);
-    userService.create<User>(newUser)
+    userService
+      .create<User>(newUser)
       .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
       .catch((err) => {
         setError(err.message);
@@ -55,11 +34,10 @@ function App() {
 
     const updatedUser = { ...user, name: user.name + "!" };
     setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
-    userService.update(updatedUser)
-      .catch((err) => {
-        setError(err.message);
-        setUsers(originalUser);
-      });
+    userService.update(updatedUser).catch((err) => {
+      setError(err.message);
+      setUsers(originalUser);
+    });
   };
 
   return (
